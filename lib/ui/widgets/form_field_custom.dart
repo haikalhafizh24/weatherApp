@@ -5,11 +5,13 @@ import '../../shared/theme.dart';
 class FormFieldCustom extends StatelessWidget {
   String title;
   String hint;
-  FormFieldCustom({
-    Key? key,
-    required this.title,
-    required this.hint,
-  }) : super(key: key);
+  TextEditingController controller;
+  FormFieldCustom(
+      {Key? key,
+      required this.title,
+      required this.hint,
+      required this.controller})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +32,7 @@ class FormFieldCustom extends StatelessWidget {
             height: 8,
           ),
           TextFormField(
+            controller: controller,
             decoration: InputDecoration(
               hintText: hint,
               fillColor: kBackgroundColor,

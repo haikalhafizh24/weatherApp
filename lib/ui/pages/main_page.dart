@@ -1,6 +1,7 @@
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:weatherapp/cubit/address_cubit.dart';
+import 'package:weatherapp/cubit/user_cubit.dart';
 import 'package:weatherapp/shared/theme.dart';
 import 'package:weatherapp/ui/widgets/form_field_custom.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,6 +16,7 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  final TextEditingController nameController = TextEditingController(text: '');
   @override
   void initState() {
     // TODO: implement initState
@@ -24,6 +26,9 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+    String province = '';
+    String city = '';
+    List filtered = [];
     Widget header(List<AddressModel> address) {
       return Container(
         margin: EdgeInsets.only(
@@ -53,48 +58,75 @@ class _MainPageState extends State<MainPage> {
             FormFieldCustom(
               title: 'Nama Lengkap',
               hint: 'Nama Lengkapmu',
-            ),
-            FormFieldCustom(
-              title: 'Pilih Provinsi',
-              hint: 'Pilih Provinsi',
-            ),
-            FormFieldCustom(
-              title: 'Pilih Kota',
-              hint: 'Pilih Kota',
-            ),
-            SizedBox(
-              height: 100,
+              controller: nameController,
             ),
             DropdownSearch(
               // ignore: avoid_types_as_parameter_names
-              items: address.toList(),
+              items: address.map((AddressModel address) {
+                return address.provinsi;
+              }).toList(),
+              onChanged: (value) => setState(() {
+                value = province;
+                // ignore: avoid_print
+                print(province);
+              }),
               dropdownSearchDecoration: InputDecoration(
                 hintText: 'Pilih Provinsi',
                 fillColor: kWhiteColor,
               ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/detail');
-              },
-              child: Text(
-                'Lihat Cuaca',
-                style: whiteTextStyle.copyWith(
-                  fontWeight: semiBold,
-                ),
+            DropdownSearch(
+              items: address.map((AddressModel address) {
+                return address.kota
+                    .where(
+                      (element) => address.provinsi.toLowerCase().contains(
+                            province.toLowerCase(),
+                          ),
+                    )
+                    .toList();
+              }).toList(),
+              onChanged: (value) => setState(() {
+                value = city;
+              }),
+              dropdownSearchDecoration: InputDecoration(
+                hintText: 'Pilih Kota',
+                fillColor: kWhiteColor,
               ),
-              style: ElevatedButton.styleFrom(
-                onPrimary: kPrimaryColor,
-                fixedSize: Size(
-                  240,
-                  55,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                    18,
+            ),
+            SizedBox(
+              height: 100,
+            ),
+            BlocBuilder<UserCubit, UserState>(
+              builder: (context, state) {
+                return ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/detail');
+                    context.read<UserCubit>().setUser(
+                          name: nameController.text,
+                          provinsi: province,
+                          kota: city,
+                        );
+                  },
+                  child: Text(
+                    'Lihat Cuaca',
+                    style: whiteTextStyle.copyWith(
+                      fontWeight: semiBold,
+                    ),
                   ),
-                ),
-              ),
+                  style: ElevatedButton.styleFrom(
+                    onPrimary: kPrimaryColor,
+                    fixedSize: Size(
+                      240,
+                      55,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        18,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),
